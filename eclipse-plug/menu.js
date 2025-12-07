@@ -25,8 +25,8 @@ const platformName = {
   'android': 'Android'
 }[platform] || platform.charAt(0).toUpperCase() + platform.slice(1);
 
-// Total command count (552+ including aliases - auto counted)
-const totalCount = 552;
+// Total commnds 
+const totalCount = 639;
 
 // Get current time and date
 const now = new Date();
