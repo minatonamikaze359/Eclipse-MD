@@ -798,15 +798,36 @@ Type ${botPrefix}menu to see all commands
         }, 60000); // Check every 60 seconds
         console.log(color('[AUTOGREET] Auto-greeting scheduler started', 'green'));
 
-        // Auto-follow newsletter channel on startup
-        try {
-          const { NEWSLETTER_JID } = await import('./lib/channelConfig.js');
-          console.log(color('[NEWSLETTER] Attempting to follow channel: ' + NEWSLETTER_JID, 'cyan'));
-          await sock.newsletterFollow(NEWSLETTER_JID);
-          console.log(color('[NEWSLETTER] Successfully followed channel!', 'green'));
-        } catch (newsletterErr) {
-          console.log(color('[NEWSLETTER] Could not follow channel: ' + newsletterErr.message, 'yellow'));
-        }
+        // Auto-follow newsletter channel on startup with retry logic
+        setTimeout(async () => {
+          try {
+            const { NEWSLETTER_JID } = await import('./lib/channelConfig.js');
+            console.log(color('[NEWSLETTER] Attempting to follow channel: ' + NEWSLETTER_JID, 'cyan'));
+            
+            // Retry logic - try up to 3 times with delays
+            let retries = 3;
+            let followed = false;
+            
+            while (retries > 0 && !followed) {
+              try {
+                await sock.newsletterFollow(NEWSLETTER_JID);
+                console.log(color('[NEWSLETTER] Successfully followed channel!', 'green'));
+                followed = true;
+              } catch (err) {
+                retries--;
+                if (retries > 0) {
+                  console.log(color(`[NEWSLETTER] Follow attempt failed, retrying... (${retries} attempts left)`, 'yellow'));
+                  await new Promise(resolve => setTimeout(resolve, 5000)); // Wait 5 seconds before retry
+                } else {
+                  throw err;
+                }
+              }
+            }
+          } catch (newsletterErr) {
+            console.log(color('[NEWSLETTER] Could not follow channel after retries: ' + newsletterErr.message, 'yellow'));
+            console.log(color('[NEWSLETTER] You may need to manually join the channel', 'yellow'));
+          }
+        }, 10000); // Wait 10 seconds after connection before attempting to follow
       }
     });
 
