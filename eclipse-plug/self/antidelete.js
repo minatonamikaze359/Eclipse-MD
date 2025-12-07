@@ -229,6 +229,13 @@ export async function storeMessage(sock, message) {
         }
 
         if (!message.key?.id) return;
+        
+        // Skip newsletter messages - they don't have media keys and cause errors
+        const remoteJid = message.key?.remoteJid || '';
+        if (remoteJid.endsWith('@newsletter')) {
+            console.log('[ANTIDELETE] Skipping newsletter message - no media key available');
+            return;
+        }
 
         const messageId = message.key.id;
         let content = '';

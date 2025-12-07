@@ -65,7 +65,7 @@ const menuText = `╔╭━━〔 *𝔼𝕔𝕝𝕚𝕡𝕤𝕖 𝕄𝔻* 〕━
 │ ✦ Mᴏᴅᴇ : ${global.botMode || 'public'}
 │ ✦ Pʀᴇғɪx : [ ${prefix} ]
 │ ✦ Usᴇʀ : @${msg.key.remoteJid.split('@')[0]}
-│ ✦ Pʟᴜɢɪɴs : 552+
+│ ✦ Pʟᴜɢɪɴs : 580+
 │ ✦ Vᴇʀsɪᴏɴ : 1.2.5
 │ ✦ Year : 2025 - 2026
 │ ✦ Under Maintainance : true
@@ -352,13 +352,38 @@ const menuText = `╔╭━━〔 *𝔼𝕔𝕝𝕚𝕡𝕤𝕖 𝕄𝔻* 〕━
 ┃✪  ${prefix}yt
 ╰━━━━━━━━━━━━━━━━━⊷
 
-╭━━━✦❮ 🔞 NSFW ❯✦━⊷
+╭━━━✦❮ 📚 MANGA COMMANDS ❯✦━⊷
+┃✪  ${prefix}mangahome
+┃✪  ${prefix}mangasearch
+┃✪  ${prefix}mangainfo
+┃✪  ${prefix}mangaread
+╰━━━━━━━━━━━━━━━━━⊷
+
+╭━━━✦❮ 🔞 NSFW (18+) ❯✦━⊷
+┃✪  ${prefix}nsfw on/off
+┃✪  ${prefix}ahegao
+┃✪  ${prefix}ass
+┃✪  ${prefix}bdsm
 ┃✪  ${prefix}blowjob
+┃✪  ${prefix}boobs
+┃✪  ${prefix}cum
+┃✪  ${prefix}feet
+┃✪  ${prefix}gangbang
 ┃✪  ${prefix}hentai
+┃✪  ${prefix}lesbian
+┃✪  ${prefix}milf
+┃✪  ${prefix}nekonsfw
+┃✪  ${prefix}oral
+┃✪  ${prefix}pussy
+┃✪  ${prefix}thighs
+┃✪  ${prefix}tits
+┃✪  ${prefix}trap
+┃✪  ${prefix}waifunsfw
+┃✪  ${prefix}yaoi
+┃✪  ${prefix}yuri
 ┃✪  ${prefix}hentaivid
 ┃✪  ${prefix}hneko
 ┃✪  ${prefix}hwaifu
-┃✪  ${prefix}trap
 ┃✪  ${prefix}xvideo
 ┃✪  ${prefix}xx1
 ┃✪  ${prefix}xx2
@@ -681,19 +706,7 @@ const interactiveMessage = {
 };
 
     try {
-      const generatedMsg = generateWAMessageFromContent(from, {
-        viewOnceMessage: {
-          message: {
-            interactiveMessage: interactiveMessage
-          }
-        }
-      }, { quoted: msg });
-      
-      await sock.relayMessage(from, generatedMsg.message, { messageId: generatedMsg.key.id });
-      console.log('[MENU] Interactive menu sent successfully');
-    } catch (error) {
-      console.log('[MENU] Interactive buttons failed, using fallback:', error.message);
-      
+      // Send menu with image and external link - works reliably without viewOnce wrapper
       const linksText = `
 
 ━━━━━━━━━━━━━━━━━━━━━━
@@ -702,7 +715,7 @@ const interactiveMessage = {
 📞 *Telegram:* https://t.me/horlapookie
 ━━━━━━━━━━━━━━━━━━━━━━`;
 
-      const fallbackMessage = {
+      const menuMessage = {
         image: { url: mediaUrls.menuImage },
         caption: menuText + linksText,
         contextInfo: {
@@ -711,6 +724,7 @@ const interactiveMessage = {
           forwardedNewsletterMessageInfo: {
             ...channelInfo.contextInfo.forwardedNewsletterMessageInfo
           },
+          mentionedJid: msg.key.remoteJid.includes('g.us') ? [msg.key.remoteJid.split('@')[0] + '@s.whatsapp.net'] : undefined,
           externalAdReply: {
             title: config.botName,
             body: 'Tap to visit GitHub',
@@ -721,7 +735,22 @@ const interactiveMessage = {
           }
         }
       };
-      await sock.sendMessage(from, fallbackMessage, { quoted: msg });
+      
+      await sock.sendMessage(from, menuMessage, { quoted: msg });
+      console.log('[MENU] Menu sent successfully');
+    } catch (error) {
+      console.log('[MENU] Error sending menu:', error.message);
+      
+      // Simple text fallback
+      const linksText = `
+
+━━━━━━━━━━━━━━━━━━━━━━
+📱 *GitHub:* https://github.com/horlapookie/Eclipse-MD
+🆘 *Support:* http://www.eclipse-support.zone.id  
+📞 *Telegram:* https://t.me/horlapookie
+━━━━━━━━━━━━━━━━━━━━━━`;
+
+      await sock.sendMessage(from, { text: menuText + linksText }, { quoted: msg });
     }
 
 }

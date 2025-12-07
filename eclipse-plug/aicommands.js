@@ -168,31 +168,39 @@ async function handleReactionCommand(reaction, msg, sock, settings) {
     
     if (!gifUrl) {
       try {
+        console.log(`[REACTION] Trying prexzyvilla API for ${reaction}...`);
         const prexzyResponse = await axios.get(`https://apis.prexzyvilla.site/anime/${reaction}`, {
           responseType: 'arraybuffer',
-          timeout: 15000
+          timeout: 20000,
+          headers: {
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+          }
         });
         const contentType = prexzyResponse.headers['content-type'] || '';
         buffer = Buffer.from(prexzyResponse.data);
         
-        if (contentType.includes('image/gif') || contentType.includes('video')) {
-          await sock.sendMessage(from, {
-            video: buffer,
-            gifPlayback: true,
-            caption: caption,
-            mentions: mentions
-          }, { quoted: msg });
-          return;
-        } else {
-          await sock.sendMessage(from, {
-            image: buffer,
-            caption: caption,
-            mentions: mentions
-          }, { quoted: msg });
-          return;
+        console.log(`[REACTION] prexzyvilla response: ${contentType}, size: ${buffer.length}`);
+        
+        if (buffer.length > 1000) {
+          if (contentType.includes('gif') || contentType.includes('video')) {
+            await sock.sendMessage(from, {
+              video: buffer,
+              gifPlayback: true,
+              caption: caption,
+              mentions: mentions
+            }, { quoted: msg });
+            return;
+          } else if (contentType.includes('image')) {
+            await sock.sendMessage(from, {
+              image: buffer,
+              caption: caption,
+              mentions: mentions
+            }, { quoted: msg });
+            return;
+          }
         }
       } catch (e) {
-        console.log(`[REACTION] prexzy API failed for ${reaction}`);
+        console.log(`[REACTION] prexzy API failed for ${reaction}:`, e.message);
       }
     }
     

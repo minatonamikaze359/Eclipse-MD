@@ -55,15 +55,14 @@ function logNetworkError(prefix, error) {
     }
 }
 
-// Video API client using same approach as play command
-const videoApi = {
-    base: 'https://api.princetechn.com/api/download/ytmp4',
-    apikey: process.env.PRINCE_API_KEY || 'prince',
-    async getVideoData(videoUrl) {
-        try {
+// Video API clients - multiple fallbacks for reliability
+const videoApis = {
+    princetechn: {
+        base: 'https://api.princetechn.com/api/download/ytmp4',
+        apikey: process.env.PRINCE_API_KEY || 'prince',
+        async getVideoData(videoUrl) {
             const params = new URLSearchParams({ apikey: this.apikey, url: videoUrl });
             const url = `${this.base}?${params.toString()}`;
-            
             const { data } = await axios.get(url, {
                 timeout: 30000,
                 headers: { 
@@ -74,9 +73,32 @@ const videoApi = {
                 validateStatus: () => true
             });
             return data;
-        } catch (err) {
-            console.error('[VIDEO_API] Request failed:', err?.message);
-            throw err;
+        }
+    },
+    prexzy: {
+        async getVideoData(videoUrl) {
+            const { data } = await axios.get('https://apis.prexzyvilla.site/downloader/ytmp4', {
+                params: { url: videoUrl },
+                timeout: 30000,
+                headers: { 'user-agent': 'Mozilla/5.0' }
+            });
+            return data;
+        }
+    },
+    cobalt: {
+        async getVideoData(videoUrl) {
+            const { data } = await axios.post('https://api.cobalt.tools/api/json', {
+                url: videoUrl,
+                vQuality: '720',
+                filenamePattern: 'basic'
+            }, {
+                timeout: 30000,
+                headers: { 
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json'
+                }
+            });
+            return data;
         }
     }
 };
@@ -312,33 +334,80 @@ export default {
                 console.error('[VIDEO] Error sending preview:', e?.message || e);
             }
 
-            // Primary: Video API (using same approach as play command)
+            // Try multiple APIs for reliability
             let videoResult;
+            let downloadUrl = null;
+            
+            // API 1: Prexzy API
             try {
-                console.log('[VIDEO] Attempting princetechn API...');
-                const videoData = await videoApi.getVideoData(videoUrl);
+                console.log('[VIDEO] Attempting Prexzy API...');
+                const videoData = await videoApis.prexzy.getVideoData(videoUrl);
                 
-                if (videoData?.success && videoData?.result?.download_url) {
+                if (videoData?.status && videoData?.result?.download) {
+                    downloadUrl = videoData.result.download;
                     videoResult = {
                         status: true,
-                        code: 200,
                         result: {
                             title: videoData.result.title || videoTitle || searchQuery,
-                            type: 'video',
-                            format: 'mp4',
-                            thumbnail: videoData.result.thumbnail,
-                            download: videoData.result.download_url,
-                            id: videoData.result.id,
+                            download: downloadUrl,
                             quality: videoData.result.quality || 'High'
                         }
                     };
-                    console.log('[VIDEO] Princetechn API success');
-                } else {
-                    throw new Error('Video API did not return a download_url');
+                    console.log('[VIDEO] Prexzy API success');
                 }
-            } catch (err) {
-                console.error(`[VIDEO] Princetechn API failed:`, err?.message || err);
-                if (err?.isAxiosError) logNetworkError('VIDEO.videoApi', err);
+            } catch (e) {
+                console.log('[VIDEO] Prexzy API failed:', e?.message);
+            }
+            
+            // API 2: Princetechn API
+            if (!downloadUrl) {
+                try {
+                    console.log('[VIDEO] Attempting Princetechn API...');
+                    const videoData = await videoApis.princetechn.getVideoData(videoUrl);
+                    
+                    if (videoData?.success && videoData?.result?.download_url) {
+                        downloadUrl = videoData.result.download_url;
+                        videoResult = {
+                            status: true,
+                            result: {
+                                title: videoData.result.title || videoTitle || searchQuery,
+                                download: downloadUrl,
+                                quality: videoData.result.quality || 'High'
+                            }
+                        };
+                        console.log('[VIDEO] Princetechn API success');
+                    }
+                } catch (e) {
+                    console.log('[VIDEO] Princetechn API failed:', e?.message);
+                }
+            }
+            
+            // API 3: Cobalt API
+            if (!downloadUrl) {
+                try {
+                    console.log('[VIDEO] Attempting Cobalt API...');
+                    const videoData = await videoApis.cobalt.getVideoData(videoUrl);
+                    
+                    if (videoData?.url) {
+                        downloadUrl = videoData.url;
+                        videoResult = {
+                            status: true,
+                            result: {
+                                title: videoTitle || searchQuery,
+                                download: downloadUrl,
+                                quality: 'High'
+                            }
+                        };
+                        console.log('[VIDEO] Cobalt API success');
+                    }
+                } catch (e) {
+                    console.log('[VIDEO] Cobalt API failed:', e?.message);
+                }
+            }
+            
+            // Fallback to ytdl-core if all APIs failed
+            if (!downloadUrl) {
+                console.log('[VIDEO] All APIs failed, trying ytdl-core...');
                 
                 // Fallback to ytdl-core
                 try {
