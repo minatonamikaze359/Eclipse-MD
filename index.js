@@ -614,6 +614,43 @@ for (const [name, cmd] of selfCommands.entries()) {
   }
 }
 
+// Log all loaded commands by category
+console.log(color('\n📋 LOADED PUBLIC COMMANDS:', 'cyan'));
+console.log('═'.repeat(60));
+
+const commandsByCategory = {};
+for (const [name, cmd] of uniqueCommands.entries()) {
+  const category = cmd.category || 'Other';
+  if (!commandsByCategory[category]) commandsByCategory[category] = [];
+  commandsByCategory[category].push(name);
+}
+
+for (const [category, cmds] of Object.entries(commandsByCategory).sort()) {
+  console.log(color(`\n📁 ${category} (${cmds.length}):`, 'yellow'));
+  cmds.sort().forEach(cmd => console.log(color(`  ✓ ${cmd}`, 'white')));
+}
+
+console.log(color(`\n✅ Total: ${uniqueCommands.size} commands loaded\n`, 'green'));
+console.log('═'.repeat(60));
+
+console.log(color('\n📋 LOADED SELF COMMANDS:', 'cyan'));
+console.log('═'.repeat(60));
+
+const selfCommandsByCategory = {};
+for (const [name, cmd] of uniqueSelfCommands.entries()) {
+  const category = cmd.category || 'Self';
+  if (!selfCommandsByCategory[category]) selfCommandsByCategory[category] = [];
+  selfCommandsByCategory[category].push(name);
+}
+
+for (const [category, cmds] of Object.entries(selfCommandsByCategory).sort()) {
+  console.log(color(`\n📁 ${category} (${cmds.length}):`, 'yellow'));
+  cmds.sort().forEach(cmd => console.log(color(`  ✓ ${cmd}`, 'white')));
+}
+
+console.log(color(`\n✅ Total: ${uniqueSelfCommands.size} self commands loaded\n`, 'green'));
+console.log('═'.repeat(60));
+
 // Display loaded commands in test mode
 if (TEST_MODE) {
   console.log('\n' + '='.repeat(60));

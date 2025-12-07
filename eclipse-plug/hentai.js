@@ -4,9 +4,10 @@ async function hentaiScraper() {
   try {
     // Try multiple APIs for better reliability
     const apis = [
-      'https://nekos.life/api/v2/img/hentai',
       'https://api.waifu.pics/nsfw/waifu',
-      'https://nekos.best/api/v2/hentai'
+      'https://nekos.best/api/v2/neko',
+      'https://api.waifu.im/search/?included_tags=hentai',
+      'https://purrbot.site/api/img/nsfw/hentai/gif'
     ];
     
     for (const api of apis) {
@@ -15,6 +16,8 @@ async function hentaiScraper() {
         if (response.data) {
           if (response.data.url) return { url: response.data.url };
           if (response.data.results && response.data.results[0]) return { url: response.data.results[0].url };
+          if (response.data.images && response.data.images[0]) return { url: response.data.images[0].url };
+          if (response.data.link) return { url: response.data.link };
         }
       } catch (apiError) {
         console.log(`API ${api} failed, trying next...`);

@@ -1,80 +1,53 @@
-import axios from 'axios';
-import fs from 'fs';
-import path from 'path';
 
-const emojisPath = path.join(process.cwd(), 'data', 'emojis.json');
-const emojis = JSON.parse(fs.readFileSync(emojisPath, 'utf8'));
+import axios from 'axios';
+
+async function fetchBlowjob() {
+  const apis = [
+    { url: 'https://api.waifu.pics/nsfw/blowjob', format: 'url' },
+    { url: 'https://purrbot.site/api/img/nsfw/blowjob/gif', format: 'link' }
+  ];
+
+  for (const api of apis) {
+    try {
+      const response = await axios.get(api.url, { timeout: 10000 });
+      if (response.data) {
+        if (api.format === 'url' && response.data.url) return response.data.url;
+        if (api.format === 'link' && response.data.link) return response.data.link;
+      }
+    } catch (error) {
+      console.log(`[NSFW blowjob] API ${api.url} failed, trying next...`);
+      continue;
+    }
+  }
+  throw new Error('All APIs failed');
+}
 
 export default {
-  name: "blowjob",
-  description: "Sends random NSFW blowjob images as carousel (group only).",
-  category: "NSFW",
-
+  name: 'blowjob',
+  description: '🔞 Get random blowjob content',
+  category: 'NSFW',
   async execute(msg, { sock }) {
     const dest = msg.key.remoteJid;
-    const isGroup = dest.endsWith('@g.us');
-
-    if (!isGroup) {
-      await sock.sendMessage(dest, {
-        text: `${emojis.error} This command can only be used in group chats.`,
-      }, { quoted: msg });
-      return;
-    }
-
-    const url = 'https://api.waifu.pics/nsfw/blowjob';
-
     try {
       await sock.sendMessage(dest, {
-        react: { text: emojis.processing, key: msg.key }
+        react: { text: '⏳', key: msg.key }
       });
 
-      // Fetch 5 image URLs
-      const imagePromises = [];
-      for (let i = 0; i < 5; i++) {
-        imagePromises.push(axios.get(url));
-      }
-
-      const responses = await Promise.all(imagePromises);
-      const imageUrls = responses.map(response => response.data.url);
-
-      // Create carousel message array
-      const mediaMessages = imageUrls.map(imageUrl => ({
-        image: { url: imageUrl }
-      }));
-
-      // Send as carousel
-      try {
-        await sock.sendMessage(dest, { 
-          mediaGroup: mediaMessages 
-        }, { quoted: msg });
-        
-        await sock.sendMessage(dest, {
-          react: { text: emojis.success, key: msg.key }
-        });
-      } catch (carouselError) {
-        console.error('[BLOWJOB] Carousel failed, sending individually:', carouselError.message);
-        
-        // Fallback: send one by one
-        for (const imageUrl of imageUrls) {
-          await sock.sendMessage(dest, {
-            image: { url: imageUrl }
-          }, { quoted: msg });
-        }
-
-        await sock.sendMessage(dest, {
-          react: { text: emojis.success, key: msg.key }
-        });
-      }
-
-    } catch (error) {
-      console.error('[BLOWJOB] Error:', error);
-      await sock.sendMessage(dest, {
-        text: `${emojis.error} Failed to fetch blowjob images.\n\nError: ${error.message}`,
-      }, { quoted: msg });
+      const url = await fetchBlowjob();
       
       await sock.sendMessage(dest, {
-        react: { text: emojis.error, key: msg.key }
+        image: { url },
+        caption: '🔞 *Random Blowjob Content*\n\n⚠️ NSFW Content'
+      }, { quoted: msg });
+
+      await sock.sendMessage(dest, {
+        react: { text: '✅', key: msg.key }
       });
+    } catch (error) {
+      console.error('[NSFW blowjob] Error:', error.message);
+      await sock.sendMessage(dest, {
+        text: '❌ Failed to fetch blowjob content. Try again later.'
+      }, { quoted: msg });
     }
   }
 };
