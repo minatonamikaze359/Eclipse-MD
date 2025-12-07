@@ -663,12 +663,12 @@ const menuText = `╔╭━━〔 *𝔼𝕔𝕝𝕚𝕡𝕤𝕖 𝕄𝔻* 〕━
 > ᴘᴏᴡᴇʀᴇᴅ ʙʏ ${config.botName}©`;
 
 // Load commands from files
-const commandFiles = fs.readdirSync('./commands').filter(file => file.endsWith('.js'));
+const commandFiles = fs.readdirSync('./eclipse-plug').filter(file => file.endsWith('.js'));
 const commands = new Map();
 const uniqueCommandNames = new Set();
 
 for (const file of commandFiles) {
-    const commandModule = await import(`./commands/${file}`);
+    const commandModule = await import(`./${file}`);
     const command = commandModule.default;
     commands.set(command.name || file.replace('.js', ''), command);
 }
