@@ -614,12 +614,6 @@ for (const [name, cmd] of selfCommands.entries()) {
   }
 }
 
-// Simplified command loading summary
-console.log(color(`\n✅ ${uniqueCommands.size} public commands loaded`, 'green'));
-console.log(color(`✅ ${uniqueSelfCommands.size} self commands loaded`, 'green'));
-console.log(color(`\n🎯 TOTAL: ${commands.size + selfCommands.size} command invocations (including aliases)\n`, 'magenta'));
-console.log('═'.repeat(60));
-
 // Display loaded commands in test mode
 if (TEST_MODE) {
   console.log('\n' + '='.repeat(60));
