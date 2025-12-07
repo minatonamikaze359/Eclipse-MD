@@ -639,6 +639,7 @@ for (const [category, cmds] of Object.entries(commandsByCategory).sort()) {
 }
 
 console.log(color(`\n✅ Total: ${uniqueCommands.size} commands loaded\n`, 'green'));
+console.log(color(`📊 Total command invocations (including aliases): ${commands.size}`, 'blue'));
 console.log('═'.repeat(60));
 
 console.log(color('\n📋 LOADED SELF COMMANDS:', 'cyan'));
@@ -665,6 +666,10 @@ for (const [category, cmds] of Object.entries(selfCommandsByCategory).sort()) {
 }
 
 console.log(color(`\n✅ Total: ${uniqueSelfCommands.size} self commands loaded\n`, 'green'));
+console.log(color(`📊 Total self command invocations (including aliases): ${selfCommands.size}`, 'blue'));
+console.log('═'.repeat(60));
+
+console.log(color(`\n🎯 GRAND TOTAL: ${commands.size + selfCommands.size} command invocations (commands + aliases)`, 'magenta'));
 console.log('═'.repeat(60));
 
 // Display loaded commands in test mode
