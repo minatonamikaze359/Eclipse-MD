@@ -710,7 +710,7 @@ const interactiveButtons = [
 
 const interactiveMessage = {
   body: proto.Message.InteractiveMessage.Body.create({
-    text: updatedMenuText
+    text: menuText
   }),
   footer: proto.Message.InteractiveMessage.Footer.create({
     text: `© ${config.botName} | Powered by Eclipse MD`

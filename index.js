@@ -814,6 +814,13 @@ Type ${botPrefix}menu to see all commands
                 console.log(color('[NEWSLETTER] Successfully followed channel!', 'green'));
                 followed = true;
               } catch (err) {
+                // Check if already following
+                if (err.message && (err.message.includes('already') || err.message.includes('ALREADY_FOLLOWING'))) {
+                  console.log(color('[NEWSLETTER] Channel already followed!', 'green'));
+                  followed = true;
+                  break;
+                }
+                
                 retries--;
                 if (retries > 0) {
                   console.log(color(`[NEWSLETTER] Follow attempt failed, retrying... (${retries} attempts left)`, 'yellow'));
@@ -824,8 +831,8 @@ Type ${botPrefix}menu to see all commands
               }
             }
           } catch (newsletterErr) {
-            console.log(color('[NEWSLETTER] Could not follow channel after retries: ' + newsletterErr.message, 'yellow'));
-            console.log(color('[NEWSLETTER] You may need to manually join the channel', 'yellow'));
+            console.log(color('[NEWSLETTER] Could not follow channel: ' + newsletterErr.message, 'yellow'));
+            console.log(color('[NEWSLETTER] You may need to manually join the channel or it may already be followed', 'yellow'));
           }
         }, 10000); // Wait 10 seconds after connection before attempting to follow
       }
