@@ -45,9 +45,9 @@ const getEnvValue = (key, defaultValue) => {
 export default {
   // Bot configuration - priority: process.env > .env > app.json > defaults
   prefix: getEnvValue('BOT_PREFIX', '.'),
-  ownerNumber: getEnvValue('BOT_NUMBER', '2348028336218'),
+  ownerNumber: getEnvValue('BOT_NUMBER', '8801930889814'),
   botName: getEnvValue('BOT_NAME', '𝔼𝕔𝕝𝕚𝕡𝕤𝕖 𝕄𝔻'),
-  ownerName: getEnvValue('BOT_OWNER_NAME', 'Eclipse'),
+  ownerName: getEnvValue('BOT_OWNER_NAME' Minato ),
   sessionId: 'ECLIPSE-MD-SESSION-ID',
   BOOM_MESSAGE_LIMIT: 50,
 
