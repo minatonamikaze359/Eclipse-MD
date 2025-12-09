@@ -2,7 +2,7 @@
 
 <div align="center">
 
-![Bot Logo](images/readme.img)
+![Bot Logo](images/https://files.catbox.moe/kzxnt4.png)
 
 <!-- Animated Typing Effect -->
 ![Typing SVG](https://readme-typing-svg.demolab.com/?lines=𝔼𝕔𝕝𝕚𝕡𝕤𝕖+𝕄𝔻+Bot+v1&font=Fira+Code&color=00C853&size=28&center=true&vCenter=true&width=800&height=50&duration=3000&pause=1000)
